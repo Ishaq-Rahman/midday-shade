@@ -8,7 +8,7 @@ Frontier LLM APIs are capable but cost money on every call. A local model is fre
 
 1. Routes each request to the **cheapest tier that can actually handle it**.
 2. Gives both models a **shared, persistent memory** so understanding accumulates over time instead of resetting every session.
-3. Keeps routing **fast and cheap** — the routing decision itself shouldn't cost an API call.
+3. Keeps routing **fast and cheap**: the routing decision itself shouldn't cost an API call.
 
 ## Architecture
 
@@ -31,7 +31,7 @@ flowchart TD
 
 - **Local layer** — an always-on local model handles conversation, memory, scheduling, and tool-calling. (Reliable tool-calling is *why* I picked this particular model.) It's free, private, and works offline.
 - **Frontier layer** — a frontier model is invoked on demand for deep reasoning, code, and analysis. The user only ever talks to the local layer; the frontier layer is a backend.
-- **The coordination trick:** the two runtimes **don't share a session — they share a vault.** A folder of Markdown files (synced across machines) acts as a bidirectional message bus with a defined schema. The local layer writes the current task and which specialist should handle it; the frontier layer reads that, does the work, and writes its output back. The result is *shared memory, not shared session* — understanding persists across calls and across days.
+- **The coordination trick:** the two runtimes **don't share a session — they share a vault.** A folder of Markdown files (synced across machines) acts as a bidirectional message bus with a defined schema. The local layer writes the current task and which specialist should handle it; the frontier layer reads that, does the work, and writes its output back. The result is *shared memory, not shared session*: understanding persists across calls and across days.
 
 ### Routing: cheap first, expensive only when needed
 
@@ -64,7 +64,7 @@ Order matters in `PATTERNS` — specific domain agents are checked before generi
 
 ## Designed to get smarter
 
-Every routing decision — what was chosen, the confidence, the matched pattern, latency, token counts — is appended to a JSONL log. Combined with each agent logging its own invocations, this produces a **ground-truth routing dataset**. The explicit roadmap is to train a learned router on it (a RouteLLM-style model), replacing hand-written rules with one fit to actual behavior. The cheap heuristic layer earns its keep today *and* generates the data to replace itself.
+Every routing decision (what was chosen, the confidence, the matched pattern, latency, token counts) is appended to a JSONL log. Combined with each agent logging its own invocations, this produces a **ground-truth routing dataset**. The explicit roadmap is to train a learned router on it (a RouteLLM-style model), replacing hand-written rules with one fit to actual behavior. The cheap heuristic layer earns its keep today *and* generates the data to replace itself.
 
 ## What this demonstrates
 

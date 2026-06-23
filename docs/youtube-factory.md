@@ -4,7 +4,7 @@ A fully automated short-form video pipeline: a local model writes the script, na
 
 ## The problem
 
-Produce finished, captioned vertical videos end-to-end with no manual steps and no expensive dependencies. Specifically: no paid forced-alignment service for caption timing, no heavyweight video framework — just the primitives, orchestrated.
+Produce finished, captioned vertical videos end-to-end with no manual steps and no expensive dependencies. Specifically: no paid forced-alignment service for caption timing, no heavyweight video framework, just the primitives, orchestrated.
 
 ## Architecture
 
@@ -58,7 +58,7 @@ It's an approximation, but for narrated short-form it reads correctly and costs 
 
 - Gluing several APIs and tools into a hands-off pipeline, with scheduling and state tracking.
 - Working at the primitive level (ffmpeg, ASS subtitles) instead of reaching for a heavy framework.
-- Cost-conscious design: local LLM for generation, a clever heuristic instead of a paid alignment service — marginal cost is just text-to-speech.
+- Cost-conscious design: local LLM for generation, a clever heuristic instead of a paid alignment service, so marginal cost is just text-to-speech.
 - Robustness details that matter in automation: retries with backoff, resumable uploads, dedup.
 
 > Sanitized: API keys, voice/channel identifiers, and file paths are omitted.
