@@ -1,8 +1,15 @@
 # midday-shade
 
-A personal, self-hosted AI platform I designed, built, and run on a single consumer workstation — a 35-billion-parameter language model serving locally on a 12 GB AMD GPU, a two-layer local + frontier agent architecture, and three production-style automation systems (market intelligence, algorithmic trading, video generation) built on top of it.
+**A self-hosted AI platform that runs a 35B language model on a single 12 GB consumer GPU.**
 
-This repository is a **sanitized engineering showcase**: architecture write-ups, design decisions, and representative code. The live system runs private (it holds credentials and personal data), so what's here is the engineering, not the secrets.
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![llama.cpp · ROCm](https://img.shields.io/badge/llama.cpp-ROCm%2FHIP-orange)
+![Self-hosted](https://img.shields.io/badge/self--hosted-single%20workstation-success)
+
+I designed, built, and run the whole thing on one consumer workstation: a 35-billion-parameter language model serving locally on a 12 GB AMD GPU, a two-layer local + frontier agent architecture, and three production-style automation systems (market intelligence, algorithmic trading, and video generation) on top of it.
+
+This repository is a **sanitized engineering showcase**: architecture write-ups, design decisions, and [representative code](snippets/). The live system stays private (it holds credentials and personal data), so what's here is the engineering, not the secrets.
 
 > **Why this exists.** Most of my measurable "AI" credentials are coursework and certificates. They badly understate what I've actually built. This is the real artifact: systems that have to stay up, stay cheap, and make correct decisions under real constraints.
 
@@ -26,7 +33,7 @@ flowchart TD
     P2 --> DB
 ```
 
-Everything runs on one box: a Ryzen 7 5700X3D, an AMD Radeon RX 7700 XT (12 GB), and 31 GiB of RAM. The hard constraint — a 35B model on 12 GB of VRAM — drove most of the interesting engineering.
+Everything runs on one box: a Ryzen 7 5700X3D, an AMD Radeon RX 7700 XT (12 GB), and 31 GiB of RAM. The hard constraint, a 35B model on 12 GB of VRAM, drove most of the interesting engineering.
 
 ---
 
@@ -47,7 +54,7 @@ A free, always-on local model for routine work; a frontier model only when it's 
 
 ### 📊 Market intelligence pipeline — [`docs/dropship-intel.md`](docs/dropship-intel.md)
 An always-on system that scrapes product and social data, scores opportunities, and writes daily briefs.
-- **Hard problem:** scrape aggressively-defended sites (TikTok, Instagram, Shopify) without getting banned, and turn noisy data into a ranked shortlist.
+- **Hard problem:** scrape aggressively-defended sites (TikTok, Instagram, Shopify) without getting banned, then turn noisy data into a ranked shortlist.
 - **Approach:** an async scraper fleet with an **adaptive token-bucket rate limiter** that backs off on ban signals and recovers on success; Playwright with anti-fingerprinting; **network-response interception** to read TikTok's internal trend API; persistent hashtag rotation. A **deterministic scorer** owns the ranking; an LLM only adds tags — the math is never delegated to the model.
 - **Result:** time-series price/engagement history in TimescaleDB hypertables, a self-growing competitor list, and automated daily reports — at near-zero LLM cost via local-first tagging.
 
@@ -62,6 +69,19 @@ Script → narration → video → upload, fully automated, for ~$0.10 an episod
 - **Hard problem:** produce captioned vertical video without paid forced-alignment or heavy frameworks.
 - **Approach:** local LLM writes the script (zero API cost), ElevenLabs narrates, **raw ffmpeg** assembles a 9:16 video, captions are timed from word-count heuristics into burned ASS subtitles, and the result is uploaded via the YouTube API with resumable chunked transfer.
 - **Result:** a scheduled, hands-off pipeline whose only marginal cost is text-to-speech.
+
+---
+
+## Representative code — [`snippets/`](snippets/)
+
+A handful of self-contained excerpts pulled from the live system, each chosen to
+show a design decision rather than bulk:
+
+- **[Adaptive rate-limit governor](snippets/rate_limit_governor.py)** — an async token bucket that halves its own rate on a ban signal and recovers on success (AIMD), so scrapers self-tune instead of guessing a constant.
+- **[Routing policy](snippets/route_policy.py)** — the microsecond, fail-open rule that decides local-vs-frontier per request before any model is touched.
+- **[Deterministic scorer](snippets/deterministic_scorer.py)** — ranking owned by explicit math with hard disqualifiers; the LLM only tags, never decides the number.
+- **[Walk-forward CV](snippets/walk_forward_cv.py)** — expanding-window time-series validation that keeps future data out of a trading model's evaluation.
+- **[MoE offload launch](snippets/moe_offload_launch.sh)** — the llama.cpp invocation that fits a 35B model on 12 GB.
 
 ---
 
